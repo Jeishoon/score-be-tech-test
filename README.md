@@ -112,3 +112,6 @@ internal/outgoings ONS code mapping and estimator
 internal/postcode postcode parsing and region lookup (+ data/ embedded JSON)
 
 ```
+## Extension: Hybrid Values
+
+I haven't implemented the extension. My notes on how I'd approach it are in [docs/hybrid-values.md](docs/hybrid-values.md).
