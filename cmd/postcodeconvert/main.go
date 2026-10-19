@@ -24,8 +24,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-
-	"github.com/jasonzou/score-be-tech-test/internal/postcode"
 )
 
 // The main all-UK CSV inside the zip, e.g. "Data/NSPL_AUG_2026_UK.csv".
@@ -48,7 +46,7 @@ func run(in, out string) error {
 	}
 	defer closeFn()
 
-	b := postcode.NewBuilder()
+	b := NewBuilder()
 	rows, err := readNSPL(r, b)
 	if err != nil {
 		return fmt.Errorf("read %s: %w", name, err)
@@ -70,7 +68,7 @@ func run(in, out string) error {
 // readNSPL streams the CSV into b and returns the number of data rows.
 // Columns are found by name because NSPL suffixes them with the boundary
 // year (e.g. "rgn26cd"), which changes between releases.
-func readNSPL(r io.Reader, b *postcode.Builder) (int, error) {
+func readNSPL(r io.Reader, b *Builder) (int, error) {
 	cr := csv.NewReader(r)
 	cr.ReuseRecord = true
 	header, err := cr.Read()

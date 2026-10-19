@@ -1,4 +1,4 @@
-package onsimport
+package main
 
 import (
 	"testing"

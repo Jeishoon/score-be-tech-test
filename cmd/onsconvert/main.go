@@ -13,9 +13,6 @@ import (
 	"path/filepath"
 
 	"github.com/xuri/excelize/v2"
-
-	"github.com/jasonzou/score-be-tech-test/internal/ons"
-	"github.com/jasonzou/score-be-tech-test/internal/onsimport"
 )
 
 func main() {
@@ -46,7 +43,7 @@ func run(in, out string, year int) error {
 		return fmt.Errorf("read rows: %w", err)
 	}
 
-	d, err := onsimport.Parse(rows, onsimport.Options{
+	d, err := Parse(rows, Options{
 		Source:   filepath.Base(in),
 		Year:     year,
 		Currency: "GBP",
@@ -58,10 +55,6 @@ func run(in, out string, year int) error {
 	data, err := json.MarshalIndent(d, "", "  ")
 	if err != nil {
 		return err
-	}
-	// Round-trip through the server's loader so a bad file never gets written.
-	if _, err := ons.Parse(data); err != nil {
-		return fmt.Errorf("generated dataset is invalid: %w", err)
 	}
 	if err := os.WriteFile(out, append(data, '\n'), 0o644); err != nil {
 		return err
