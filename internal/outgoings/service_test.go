@@ -34,11 +34,7 @@ func client(pc string) cases.Client {
 
 func newService(t *testing.T, r RegionResolver, list ...cases.Case) *Service {
 	t.Helper()
-	repo, err := cases.NewMemoryRepository(list...)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return NewService(repo, r, newEstimator(t))
+	return NewService(cases.NewMemoryRepository(list...), r, newEstimator(t))
 }
 
 func TestEstimateCase(t *testing.T) {

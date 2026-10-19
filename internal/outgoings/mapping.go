@@ -44,7 +44,7 @@ type MapItem struct {
 	codes []string
 }
 
-var mapping = []MapItem {
+var mapping = []MapItem{
 	{func(o *Outgoings) *float64 { return &o.Water }, []string{"4.3"}},
 	{func(o *Outgoings) *float64 { return &o.Communications }, []string{"8"}},
 	// Net rent plus mortgage capital and dwelling purchase/alteration.
