@@ -6,7 +6,7 @@ import (
 )
 
 const sample = `{
-  "source": "test", "year": 2019, "period": "weekly", "currency": "GBP",
+  "source": "test", "year": 2019, "currency": "GBP",
   "regions": ["UK", "London"],
   "total_expenditure": {"UK": 500, "London": 600},
   "items": [

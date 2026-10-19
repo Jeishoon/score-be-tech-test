@@ -16,9 +16,7 @@ const UK = "UK"
 type Dataset struct {
 	Source           string             `json:"source"`
 	Year             int                `json:"year"`
-	Period           string             `json:"period"`
 	Currency         string             `json:"currency"`
-	Note             string             `json:"note,omitempty"`
 	Regions          []string           `json:"regions"`
 	TotalExpenditure map[string]float64 `json:"total_expenditure"`
 	Items            []Item             `json:"items"`
