@@ -70,21 +70,3 @@ func (t *Table) Region(raw string) (string, error) {
 	}
 	return "", fmt.Errorf("%w: %s", ErrUnknownPostcode, pc)
 }
-
-// RegionCodes maps NSPL region/country codes to the region names used in the
-// ONS expenditure tables. Channel Islands (L99999999) and Isle of Man
-// (M99999999) are not covered by the ONS tables and are left out on purpose.
-var RegionCodes = map[string]string{
-	"E12000001": "North East",
-	"E12000002": "North West",
-	"E12000003": "Yorkshire and the Humber",
-	"E12000004": "East Midlands",
-	"E12000005": "West Midlands",
-	"E12000006": "East",
-	"E12000007": "London",
-	"E12000008": "South East",
-	"E12000009": "South West",
-	"W99999999": "Wales",
-	"S99999999": "Scotland",
-	"N99999999": "Northern Ireland",
-}
