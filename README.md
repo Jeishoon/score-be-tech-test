@@ -115,3 +115,10 @@ internal/postcode postcode parsing and region lookup (+ data/ embedded JSON)
 ## Extension: Hybrid Values
 
 I haven't implemented the extension. My notes on how I'd approach it are in [docs/hybrid-values.md](docs/hybrid-values.md).
+
+## Disclaimer of AI usage
+
+I confirm that I have used AI to assist with this take home task in the following ways and for the following reasons:
+
+- Since the recommendation was in Golang, and my Golang is not very strong, I used AI to assist with syntax and how my design decisions could be implemented in Golang.
+- Due to the fast turnaround for this task and commitments that were already planned before the take home task was assigned, I was tigher on time, and so used AI to speed up development in fleshing out ideas and code generation.
