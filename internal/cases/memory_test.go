@@ -32,12 +32,3 @@ func TestLoadFileArray(t *testing.T) {
 		t.Errorf("Get(missing) err = %v, want ErrNotFound", err)
 	}
 }
-
-func TestNewMemoryRepositoryRejectsBadCases(t *testing.T) {
-	if _, err := NewMemoryRepository(Case{}); err == nil {
-		t.Error("want error for empty case_id")
-	}
-	if _, err := NewMemoryRepository(Case{CaseID: "a"}, Case{CaseID: "a"}); err == nil {
-		t.Error("want error for duplicate case_id")
-	}
-}

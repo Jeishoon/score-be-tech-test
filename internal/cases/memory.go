@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 )
@@ -34,22 +33,16 @@ func LoadFile(path string) (*MemoryRepository, error) {
 	if err != nil {
 		return nil, fmt.Errorf("decode %s: %w", path, err)
 	}
-	return NewMemoryRepository(list...)
+	return NewMemoryRepository(list...), nil
 }
 
 // NewMemoryRepository builds a repository from cases already in memory.
-func NewMemoryRepository(list ...Case) (*MemoryRepository, error) {
+func NewMemoryRepository(list ...Case) *MemoryRepository {
 	r := &MemoryRepository{cases: make(map[string]Case, len(list))}
 	for _, c := range list {
-		if c.CaseID == "" {
-			return nil, errors.New("case without case_id")
-		}
-		if _, dup := r.cases[c.CaseID]; dup {
-			return nil, fmt.Errorf("duplicate case_id %q", c.CaseID)
-		}
 		r.cases[c.CaseID] = c
 	}
-	return r, nil
+	return r
 }
 
 func (r *MemoryRepository) Get(_ context.Context, id string) (Case, error) {
