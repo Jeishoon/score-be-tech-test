@@ -51,7 +51,6 @@ func (p Postcode) Sector() string { return p.Outward + " " + p.Inward[:1] }
 // Table maps postcode sectors and districts to ONS region names.
 type Table struct {
 	Source    string            `json:"source"`
-	Note      string            `json:"note,omitempty"`
 	Sectors   map[string]string `json:"sectors"`
 	Districts map[string]string `json:"districts"`
 }

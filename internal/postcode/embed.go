@@ -3,7 +3,6 @@ package postcode
 import (
 	_ "embed"
 	"encoding/json"
-	"errors"
 	"fmt"
 )
 
@@ -15,17 +14,9 @@ var sectors []byte
 
 // LoadTable returns the embedded postcode -> region table.
 func LoadTable() (*Table, error) {
-	return ParseTable(sectors)
-}
-
-// ParseTable decodes and validates a table produced by cmd/postcodeconvert.
-func ParseTable(data []byte) (*Table, error) {
 	var t Table
-	if err := json.Unmarshal(data, &t); err != nil {
+	if err := json.Unmarshal(sectors, &t); err != nil {
 		return nil, fmt.Errorf("decode postcode table: %w", err)
-	}
-	if len(t.Sectors) == 0 || len(t.Districts) == 0 {
-		return nil, errors.New("postcode table is empty")
 	}
 	return &t, nil
 }

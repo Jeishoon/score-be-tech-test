@@ -25,6 +25,13 @@ type Outgoings struct {
 	AdditionalDetails                   string  `json:"outgoings_additional_details"`
 }
 
+// mapItem is one outgoing and the ONS codes that add up to it. field returns
+// a pointer to that outgoing in an Outgoings, so the estimator can set it.
+type mapItem struct {
+	field func(*Outgoings) *float64
+	codes []string
+}
+
 // mapping says which ONS expenditure codes (ONS Family Spending table A35,
 // expenditure by region) add up to each outgoing. A code must not appear in
 // more than one field, and a parent code must not be listed together with
@@ -39,12 +46,7 @@ type Outgoings struct {
 //
 // Outgoings with no matching ONS line are left at 0:
 //   - ground rent / service charge / shared equity rent
-type MapItem struct {
-	field func(*Outgoings) *float64
-	codes []string
-}
-
-var mapping = []MapItem{
+var mapping = []mapItem{
 	{func(o *Outgoings) *float64 { return &o.Water }, []string{"4.3"}},
 	{func(o *Outgoings) *float64 { return &o.Communications }, []string{"8"}},
 	// Net rent plus mortgage capital and dwelling purchase/alteration.

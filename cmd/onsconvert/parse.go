@@ -46,16 +46,20 @@ func Parse(rows [][]string, opts Options) (*ons.Dataset, error) {
 	if len(rows) == 0 {
 		return nil, errors.New("sheet is empty")
 	}
-	regions := headerRegions(rows[0])
-	if len(regions) == 0 {
+	cols := headerColumns(rows[0])
+	if len(cols) == 0 {
 		return nil, errors.New("no region headers found in first row")
+	}
+	regions := make([]string, len(cols))
+	for i, col := range cols {
+		regions[i] = col.name
 	}
 
 	d := &ons.Dataset{
 		Source:           opts.Source,
 		Year:             opts.Year,
 		Currency:         opts.Currency,
-		Regions:          sortedRegions(regions),
+		Regions:          regions,
 		TotalExpenditure: map[string]float64{},
 	}
 
@@ -90,7 +94,7 @@ func Parse(rows [][]string, opts Options) (*ons.Dataset, error) {
 	for i, row := range rows[1:] {
 		rowNum := i + 2 // 1-based, after header
 		code, label, codeCol := rowKey(row)
-		vals, hasVals, err := rowValues(row, regions)
+		vals, hasVals, err := rowValues(row, cols)
 		if err != nil {
 			return nil, fmt.Errorf("row %d: %w", rowNum, err)
 		}
@@ -141,25 +145,21 @@ func Parse(rows [][]string, opts Options) (*ons.Dataset, error) {
 	return d, nil
 }
 
-// headerRegions maps column index -> region name from the header row.
-func headerRegions(header []string) map[int]string {
-	out := map[int]string{}
-	for c := firstValCol; c < len(header); c++ {
-		if name := strings.TrimSpace(header[c]); name != "" {
-			out[c] = name
-		}
-	}
-	return out
+// column is one region column of the sheet: its index and header name.
+type column struct {
+	idx  int
+	name string
 }
 
-func sortedRegions(m map[int]string) []string {
-	out := make([]string, 0, len(m))
-	for c := firstValCol; len(out) < len(m); c++ {
-		if name, ok := m[c]; ok {
-			out = append(out, name)
+// headerColumns returns the region columns from the header row, in sheet order.
+func headerColumns(header []string) []column {
+	var cols []column
+	for c := firstValCol; c < len(header); c++ {
+		if name := strings.TrimSpace(header[c]); name != "" {
+			cols = append(cols, column{idx: c, name: name})
 		}
 	}
-	return out
+	return cols
 }
 
 // rowKey finds the category code and label in columns A-D. If the row has no
@@ -188,21 +188,21 @@ func isTotalRow(row []string) bool {
 
 // rowValues reads the region figures. hasVals is false when every region
 // cell is blank (a label-only row).
-func rowValues(row []string, regions map[int]string) (map[string]*float64, bool, error) {
-	vals := make(map[string]*float64, len(regions))
+func rowValues(row []string, cols []column) (map[string]*float64, bool, error) {
+	vals := make(map[string]*float64, len(cols))
 	hasVals := false
-	for c, region := range regions {
-		raw := strings.TrimSpace(cell(row, c))
+	for _, col := range cols {
+		raw := strings.TrimSpace(cell(row, col.idx))
 		if raw == "" {
-			vals[region] = nil
+			vals[col.name] = nil
 			continue
 		}
 		hasVals = true
 		v, err := ParseValue(raw)
 		if err != nil {
-			return nil, false, fmt.Errorf("%s: %w", region, err)
+			return nil, false, fmt.Errorf("%s: %w", col.name, err)
 		}
-		vals[region] = v
+		vals[col.name] = v
 	}
 	return vals, hasVals, nil
 }

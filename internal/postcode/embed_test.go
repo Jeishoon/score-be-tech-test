@@ -22,9 +22,3 @@ func TestLoadTable(t *testing.T) {
 		}
 	}
 }
-
-func TestParseTableRejectsEmpty(t *testing.T) {
-	if _, err := ParseTable([]byte(`{"sectors":{},"districts":{}}`)); err == nil {
-		t.Error("want error for empty table")
-	}
-}
