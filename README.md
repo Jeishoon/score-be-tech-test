@@ -95,7 +95,7 @@ Not used on purpose: 7.1 vehicle purchase (capital spend), 14.3/14.4 income tax 
 - **Fails fast at startup**: datasets, mapping and case file are loaded and validated before the server listens.
 - **Performance**: all lookups are in-memory map reads; no per-request I/O beyond the case lookup.
 - **Operability**: structured JSON request logs (`log/slog`), `/healthz`, read/write/idle timeouts, graceful shutdown on SIGINT/SIGTERM, panic recovery, internal errors never leaked to callers.
-- **Maintainability**: small packages with interfaces at the boundaries (`CaseRepository`, `RegionResolver`, `Estimator`) so parts can be swapped; mapping lives in one table; data converters are reproducible and separate from the server. Only `cmd/onsconvert` has an external dependency (`excelize`); the server uses the standard library only.
+- **Maintainability**: small packages with interfaces at the boundaries (`CaseRepository`, `RegionResolver`, `CaseEstimator`) so parts can be swapped; mapping lives in one table; data converters are reproducible and separate from the server. Only `cmd/onsconvert` has an external dependency (`excelize`); the server uses the standard library only.
 - **Testing**: unit tests for the xlsx parser (with rows shaped like the real sheet), postcode parsing/lookup, the estimator, and HTTP handlers via `httptest`.
 
 ### Layout
@@ -103,12 +103,11 @@ Not used on purpose: 7.1 vehicle purchase (capital spend), 14.3/14.4 income tax 
 ```
 
 cmd/server HTTP server entry point
-cmd/onsconvert one-off xlsx -> JSON converter
-cmd/postcodeconvert one-off NSPL -> JSON converter
+cmd/onsconvert one-off xlsx -> JSON converter (includes the xlsx row parser)
+cmd/postcodeconvert one-off NSPL -> JSON converter (includes the sector/district table builder)
 internal/api HTTP handlers and middleware
 internal/cases Case model and repository (file-backed stand-in for the case service)
 internal/ons ONS dataset model (+ data/ embedded JSON)
-internal/onsimport xlsx row parser
 internal/outgoings ONS code mapping and estimator
 internal/postcode postcode parsing and region lookup (+ data/ embedded JSON)
 
