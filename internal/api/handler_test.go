@@ -120,6 +120,29 @@ func TestHealth(t *testing.T) {
 	}
 }
 
+func TestCorsAllowsViteOriginAndPreflight(t *testing.T) {
+	h := New(failingService{}, "test", slog.New(slog.NewTextHandler(io.Discard, nil)))
+	req := httptest.NewRequest(http.MethodOptions, "/cases/"+sampleCaseID+"/outgoings", nil)
+	req.Header.Set("Origin", "http://localhost:5173")
+	req.Header.Set("Access-Control-Request-Method", "GET")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusNoContent || rec.Header().Get("Access-Control-Allow-Origin") != "http://localhost:5173" {
+		t.Fatalf("preflight status=%d headers=%v", rec.Code, rec.Header())
+	}
+}
+
+func TestCorsDoesNotAllowUnknownOrigin(t *testing.T) {
+	h := New(failingService{}, "test", slog.New(slog.NewTextHandler(io.Discard, nil)))
+	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
+	req.Header.Set("Origin", "https://untrusted.example")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Header().Get("Access-Control-Allow-Origin") != "" {
+		t.Fatalf("unexpected allow-origin header: %q", rec.Header().Get("Access-Control-Allow-Origin"))
+	}
+}
+
 type failingService struct{}
 
 func (failingService) EstimateCase(context.Context, string) (outgoings.CaseEstimate, error) {
