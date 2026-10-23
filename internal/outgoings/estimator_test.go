@@ -45,6 +45,30 @@ func TestEstimateEastMidlands(t *testing.T) {
 	}
 }
 
+func TestEstimateAveragesRegions(t *testing.T) {
+	e := newEstimator(t)
+	got, err := e.Estimate("East Midlands", "London", "East Midlands")
+	if err != nil {
+		t.Fatalf("Estimate: %v", err)
+	}
+	if got.Region != "East Midlands, London" || len(got.Regions) != 2 {
+		t.Errorf("region = %q, regions = %v; want duplicates dropped", got.Region, got.Regions)
+	}
+	// Food is ONS code 1. The weekly values are averaged before converting
+	// to monthly, so rounding happens once.
+	em, _, _ := e.ds.Value("1", "East Midlands")
+	london, _, _ := e.ds.Value("1", "London")
+	if want := monthly((em + london) / 2); got.Outgoings.Food != want {
+		t.Errorf("food = %v, want %v", got.Outgoings.Food, want)
+	}
+	if !strings.Contains(got.Outgoings.AdditionalDetails, "across East Midlands and London") {
+		t.Errorf("additional details = %q", got.Outgoings.AdditionalDetails)
+	}
+	if _, err := e.Estimate(); err == nil {
+		t.Error("want error for no regions")
+	}
+}
+
 func TestEstimateUnknownRegion(t *testing.T) {
 	if _, err := newEstimator(t).Estimate("Atlantis"); !errors.Is(err, ons.ErrUnknownRegion) {
 		t.Errorf("err = %v, want ErrUnknownRegion", err)
