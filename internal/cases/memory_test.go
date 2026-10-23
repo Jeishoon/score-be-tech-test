@@ -2,7 +2,9 @@ package cases
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"os"
 	"testing"
 )
 
@@ -17,6 +19,26 @@ func TestLoadFileSingleCase(t *testing.T) {
 	}
 	if len(c.Clients) != 2 || c.Clients[0].Details.Address.Postcode != "NG1 2ET" {
 		t.Errorf("unexpected case: %+v", c)
+	}
+}
+
+// TestCaseFileUniqueIDs guards against duplicate case IDs in case.json, which
+// LoadFile would otherwise silently collapse into one entry.
+func TestCaseFileUniqueIDs(t *testing.T) {
+	data, err := os.ReadFile("../../case.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var raw []json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		t.Fatalf("case.json should be an array of cases: %v", err)
+	}
+	r, err := LoadFile("../../case.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r.Len() != len(raw) {
+		t.Errorf("loaded %d unique case IDs from %d cases; case_id values must be unique", r.Len(), len(raw))
 	}
 }
 

@@ -17,6 +17,30 @@ make test # or: go test ./...
 | `ADDR`       | `:8080`     | listen address                                  |
 | `CASES_FILE` | `case.json` | JSON file holding one case or an array of cases |
 
+#### Example cases
+
+`case.json` holds the original sample case plus one example per ONS region and some edge cases. Add more by appending to the array; each `case_id` must be unique, and the server must be restarted to pick up changes.
+
+| Case ID                                | Postcode           | Result                                                   |
+| -------------------------------------- | ------------------ | -------------------------------------------------------- |
+| `56763bf7-d046-4a54-a4a1-0728c724a092` | NG1 2ET            | East Midlands (original sample, two clients)             |
+| `01000000-0000-4000-8000-000000000001` | SW1A 2AA           | London                                                   |
+| `02000000-0000-4000-8000-000000000002` | M1 1AE             | North West                                               |
+| `03000000-0000-4000-8000-000000000003` | B1 1BB             | West Midlands                                            |
+| `04000000-0000-4000-8000-000000000004` | LS1 4AP            | Yorkshire and the Humber                                 |
+| `05000000-0000-4000-8000-000000000005` | NE1 4ST            | North East                                               |
+| `06000000-0000-4000-8000-000000000006` | BS1 4DJ            | South West                                               |
+| `07000000-0000-4000-8000-000000000007` | CB2 1TN            | East                                                     |
+| `08000000-0000-4000-8000-000000000008` | SO14 2AQ           | South East                                               |
+| `09000000-0000-4000-8000-000000000009` | CF10 1EP           | Wales                                                    |
+| `10000000-0000-4000-8000-000000000010` | EH1 1YZ            | Scotland                                                 |
+| `11000000-0000-4000-8000-000000000011` | BT1 1AA            | Northern Ireland                                         |
+| `12000000-0000-4000-8000-000000000012` | invalid, LS1 4AP   | Yorkshire and the Humber (falls back to second client)   |
+| `13000000-0000-4000-8000-000000000013` | eh11yz             | Scotland (lowercase, no space: normalised)               |
+| `14000000-0000-4000-8000-000000000014` | NOT A POSTCODE     | 422 (invalid postcode)                                   |
+| `15000000-0000-4000-8000-000000000015` | ZZ9 9ZZ            | 422 (well-formed but not in the lookup table)            |
+| `16000000-0000-4000-8000-000000000016` | (none)             | 422 (no client has a postcode)                           |
+
 ### API
 
 `GET /cases/{caseID}/outgoings`
