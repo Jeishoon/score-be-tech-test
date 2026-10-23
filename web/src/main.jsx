@@ -25,7 +25,7 @@ function readSavedIds() {
   } catch { return []; }
 }
 
-function App() {
+export function App() {
   const [mode, setMode] = useState('table');
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('');
@@ -136,4 +136,5 @@ function App() {
   </main>;
 }
 
-createRoot(document.getElementById('root')).render(<App/>);
+const rootElement = document.getElementById('root');
+if (rootElement) createRoot(rootElement).render(<App/>);
