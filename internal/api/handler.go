@@ -41,14 +41,24 @@ func New(svc CaseEstimator, source string, log *slog.Logger) http.Handler {
 
 // OutgoingsResponse is the body of GET /cases/{caseID}/outgoings.
 type OutgoingsResponse struct {
-	CaseID          string              `json:"case_id"`
-	Region          string              `json:"region"`
-	Postcode        string              `json:"postcode"`
-	Period          string              `json:"period"`
-	Currency        string              `json:"currency"`
-	Source          string              `json:"source"`
+	CaseID   string `json:"case_id"`
+	Region   string `json:"region"`
+	Postcode string `json:"postcode"`
+	Period   string `json:"period"`
+	Currency string `json:"currency"`
+	Source   string `json:"source"`
+	// Regions is set only when the clients live in different regions and the
+	// figures are averaged across them.
+	Regions         []RegionSource      `json:"regions,omitempty"`
 	UKFallbackCodes []string            `json:"uk_fallback_codes,omitempty"`
 	Outgoings       outgoings.Outgoings `json:"outgoings"`
+}
+
+// RegionSource is one region an averaged estimate used and the client
+// postcode it came from.
+type RegionSource struct {
+	Region   string `json:"region"`
+	Postcode string `json:"postcode"`
 }
 
 type errorResponse struct {
@@ -73,6 +83,12 @@ func (h *Handler) outgoings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var regions []RegionSource
+	if len(est.Sources) > 1 {
+		for _, src := range est.Sources {
+			regions = append(regions, RegionSource{Region: src.Region, Postcode: src.Postcode})
+		}
+	}
 	writeJSON(w, http.StatusOK, OutgoingsResponse{
 		CaseID:          est.CaseID,
 		Region:          est.Region,
@@ -80,6 +96,7 @@ func (h *Handler) outgoings(w http.ResponseWriter, r *http.Request) {
 		Period:          "monthly",
 		Currency:        "GBP",
 		Source:          h.source,
+		Regions:         regions,
 		UKFallbackCodes: est.UKFallbackCodes,
 		Outgoings:       est.Outgoings,
 	})

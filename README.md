@@ -44,6 +44,7 @@ A React preview comparing a searchable case table with expandable case cards is 
 | `14000000-0000-4000-8000-000000000014` | NOT A POSTCODE     | 422 (invalid postcode)                                   |
 | `15000000-0000-4000-8000-000000000015` | ZZ9 9ZZ            | 422 (well-formed but not in the lookup table)            |
 | `16000000-0000-4000-8000-000000000016` | (none)             | 422 (no client has a postcode)                           |
+| `17000000-0000-4000-8000-000000000017` | LS1 4AP, SW1A 2AA  | Average of Yorkshire and the Humber and London           |
 
 ### API
 
@@ -69,6 +70,8 @@ A React preview comparing a searchable case table with expandable case cards is 
 | 422    | no client postcode on the case could be resolved to a region |
 | 500    | unexpected error (details are logged, not returned)          |
   
+`regions` is included only when the clients live in different ONS regions. It lists each region with the postcode it came from, and the figures are the average across them; `region` then names them all, comma-separated.
+
 `uk_fallback_codes` is included when ONS published no figure for the region for some category (sample too small), so the UK average was used instead.
 
 `GET /healthz` returns `{"status":"ok"}`.
@@ -89,7 +92,7 @@ The xlsx converter handles the sheet's quirks: codes in column A/B/C depending o
 ### How outgoings are estimated
 
 - ONS figures are average **weekly spend per household**. They are converted to monthly (`× 52 / 12`, rounded to pennies).
-- One region is used per case (the figures are per household, not per person): that of the first client whose postcode resolves.
+- Each case is treated as one household (the figures are per household, not per person). Client addresses are where each person lives now and can differ, e.g. two people moving in together, so when clients resolve to different regions each weekly ONS figure is averaged across those regions (each distinct region counted once) before converting to monthly. Clients whose postcode is missing or can't be resolved are skipped.
 - Each outgoing is the sum of ONS category codes, defined in one table in `internal/outgoings/mapping.go`:
 
 | Outgoing           | ONS codes                                                                       |

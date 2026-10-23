@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -183,6 +184,7 @@ func TestExampleCases(t *testing.T) {
 		{"14000000-0000-4000-8000-000000000014", "", "", http.StatusUnprocessableEntity},
 		{"15000000-0000-4000-8000-000000000015", "", "", http.StatusUnprocessableEntity},
 		{"16000000-0000-4000-8000-000000000016", "", "", http.StatusUnprocessableEntity},
+		{"17000000-0000-4000-8000-000000000017", "Yorkshire and the Humber, London", "LS1 4AP", http.StatusOK},
 	}
 	for _, tt := range tests {
 		t.Run(tt.id, func(t *testing.T) {
@@ -201,5 +203,39 @@ func TestExampleCases(t *testing.T) {
 				t.Errorf("region, postcode = %q, %q; want %q, %q", resp.Region, resp.Postcode, tt.region, tt.postcode)
 			}
 		})
+	}
+}
+
+// TestOutgoingsMixedRegions checks a case whose clients live in different
+// regions: the response lists both and the figures sit between the two.
+func TestOutgoingsMixedRegions(t *testing.T) {
+	srv := newServerWithCases(t, "../../case.json")
+	fetch := func(id string) OutgoingsResponse {
+		t.Helper()
+		status, body := get(t, srv.URL+"/cases/"+id+"/outgoings")
+		if status != http.StatusOK {
+			t.Fatalf("%s: status = %d, body %s", id, status, body)
+		}
+		var resp OutgoingsResponse
+		if err := json.Unmarshal(body, &resp); err != nil {
+			t.Fatal(err)
+		}
+		return resp
+	}
+	mixed := fetch("17000000-0000-4000-8000-000000000017")
+	london := fetch("01000000-0000-4000-8000-000000000001")
+	leeds := fetch("04000000-0000-4000-8000-000000000004")
+
+	want := []RegionSource{{"Yorkshire and the Humber", "LS1 4AP"}, {"London", "SW1A 2AA"}}
+	if !reflect.DeepEqual(mixed.Regions, want) {
+		t.Errorf("regions = %+v, want %+v", mixed.Regions, want)
+	}
+	lo, hi := min(london.Outgoings.Food, leeds.Outgoings.Food), max(london.Outgoings.Food, leeds.Outgoings.Food)
+	if f := mixed.Outgoings.Food; f <= lo || f >= hi {
+		t.Errorf("food = %v, want between %v and %v", f, lo, hi)
+	}
+	// Single-region responses carry no regions list.
+	if london.Regions != nil {
+		t.Errorf("single-region regions = %+v, want omitted", london.Regions)
 	}
 }

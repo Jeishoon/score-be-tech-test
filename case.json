@@ -368,5 +368,40 @@
         }
       }
     ]
+  },
+  {
+    "case_id": "17000000-0000-4000-8000-000000000017",
+    "clients": [
+      {
+        "client_id": "17000001-0000-4000-8000-000000000017",
+        "details": {
+          "first_name": "Nina",
+          "last_name": "Shah",
+          "address": {
+            "address1": "20 Boar Lane",
+            "posttown": "Leeds",
+            "postcode": "LS1 4AP"
+          },
+          "dob": "1992/07/04",
+          "dependents": 0,
+          "employment_status": "EMPLOYED"
+        }
+      },
+      {
+        "client_id": "17000002-0000-4000-8000-000000000017",
+        "details": {
+          "first_name": "Ben",
+          "last_name": "Carter",
+          "address": {
+            "address1": "10 Downing Street",
+            "posttown": "London",
+            "postcode": "SW1A 2AA"
+          },
+          "dob": "1991/12/19",
+          "dependents": 0,
+          "employment_status": "EMPLOYED"
+        }
+      }
+    ]
   }
 ]

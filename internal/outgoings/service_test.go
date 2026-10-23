@@ -3,6 +3,7 @@ package outgoings
 import (
 	"context"
 	"errors"
+	"reflect"
 	"testing"
 
 	"github.com/jasonzou/score-be-tech-test/internal/cases"
@@ -38,18 +39,32 @@ func newService(t *testing.T, r RegionResolver, list ...cases.Case) *Service {
 }
 
 func TestEstimateCase(t *testing.T) {
-	regions := fakeRegions{"NG1 2ET": "East Midlands", "SW1A 2AA": "London"}
+	regions := fakeRegions{"NG1 2ET": "East Midlands", "NG7 2RD": "East Midlands", "SW1A 2AA": "London"}
 	s := newService(t, regions,
-		cases.Case{CaseID: "first-wins", Clients: []cases.Client{client("NG1 2ET"), client("SW1A 2AA")}},
+		cases.Case{CaseID: "mixed-regions", Clients: []cases.Client{client("NG1 2ET"), client("SW1A 2AA")}},
+		cases.Case{CaseID: "same-region", Clients: []cases.Client{client("NG1 2ET"), client("NG7 2RD")}},
 		cases.Case{CaseID: "skip-bad", Clients: []cases.Client{client(""), client("bad"), client("SW1A 2AA")}},
 		cases.Case{CaseID: "none-resolve", Clients: []cases.Client{client("bad"), client("ZZ1 1ZZ")}},
 		cases.Case{CaseID: "no-postcode", Clients: []cases.Client{client("")}},
 	)
 	ctx := context.Background()
 
-	got, err := s.EstimateCase(ctx, "first-wins")
-	if err != nil || got.Region != "East Midlands" || got.Postcode != "NG1 2ET" || got.Outgoings.Food != 265.20 {
-		t.Errorf("first-wins = %+v, %v", got, err)
+	// Clients in different regions: figures are averaged across both, and
+	// both regions are reported in client order.
+	got, err := s.EstimateCase(ctx, "mixed-regions")
+	want := []RegionSource{{"East Midlands", "NG1 2ET"}, {"London", "SW1A 2AA"}}
+	if err != nil || !reflect.DeepEqual(got.Sources, want) || got.Postcode != "NG1 2ET" {
+		t.Errorf("mixed-regions = %+v, %v", got, err)
+	}
+	avg, _ := s.estimator.Estimate("East Midlands", "London")
+	if got.Outgoings != avg.Outgoings {
+		t.Errorf("mixed-regions outgoings = %+v, want average %+v", got.Outgoings, avg.Outgoings)
+	}
+
+	// Different addresses in the same region: one region, unchanged figures.
+	got, err = s.EstimateCase(ctx, "same-region")
+	if err != nil || len(got.Sources) != 1 || got.Region != "East Midlands" || got.Postcode != "NG1 2ET" || got.Outgoings.Food != 265.20 {
+		t.Errorf("same-region = %+v, %v", got, err)
 	}
 	got, err = s.EstimateCase(ctx, "skip-bad")
 	if err != nil || got.Region != "London" {
