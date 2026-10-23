@@ -36,7 +36,7 @@ func New(svc CaseEstimator, source string, log *slog.Logger) http.Handler {
 	mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		writeError(w, http.StatusNotFound, "not found")
 	})
-	return logRequests(log, mux)
+	return logRequests(log, cors(mux))
 }
 
 // OutgoingsResponse is the body of GET /cases/{caseID}/outgoings.

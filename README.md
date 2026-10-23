@@ -12,6 +12,10 @@ curl localhost:8080/cases/56763bf7-d046-4a54-a4a1-0728c724a092/outgoings | pytho
 make test # or: go test ./...
 ```
 
+### UI exploration
+
+A React preview comparing a searchable case table with expandable case cards is in [`web/`](web/README.md). Run it with `cd web && npm install && npm run dev`. It uses representative local data shaped like the API response; the current API provides per-case estimates but no case-list endpoint.
+
 | Env var      | Default     | Meaning                                         |
 | ------------ | ----------- | ----------------------------------------------- |
 | `ADDR`       | `:8080`     | listen address                                  |
